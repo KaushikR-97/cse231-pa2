@@ -1,6 +1,6 @@
 const python = require('lezer-python');
 
-const input = "def f(x): return x + 2\nf(4)";
+const input = "def gn(x: int) -> int:\n x = 5 \ngn(5)";
 
 const tree = python.parser.parse(input);
 

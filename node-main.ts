@@ -1,11 +1,24 @@
 import {compile, run} from './compiler';
-
-// command to run:
-// node node-main.js 987
+const importObject = {
+  imports: {
+    print_num: (arg : any) => {
+      console.log(arg);
+      return arg;
+    },
+    print_bool: (arg : any) => {
+      if(arg !== 0) { console.log("True"); }
+      else { console.log("False"); }
+    },
+    print_none: (arg : any) => {
+      console.log("None");
+    }
+  },
+  output: ""
+};
 const input = process.argv[2];
 const result = compile(input);
 console.log(result);
-run(result).then((value) => {
+run(result, importObject).then((value) => {
   console.log(value);
 });
 
