@@ -29,7 +29,6 @@ export function traverseLiteral(c: TreeCursor, s: string): Literal {
 }
 
 export function traverseExpr(c: TreeCursor, s: string): Expr<null> {
-  console.log(c.type.name)
   switch (c.type.name) {
     case "Number":
     case "Boolean":
@@ -49,7 +48,6 @@ export function traverseExpr(c: TreeCursor, s: string): Expr<null> {
       const callExpr = traverseExpr(c, s);
       c.nextSibling();
       let [args, kwargs] = traverseArguments(c, s);
-      console.log(args)
       c.parent();
       if (callExpr.tag === "id") {
         const callName = callExpr.name;
@@ -232,7 +230,6 @@ export function traverseArguments(
 }
 
 export function traverseStmt(c: TreeCursor, s: string): Stmt<null> {
-  console.log(c.node.type.name)
   switch (c.node.type.name) {
     case "ReturnStatement":
       c.firstChild();
@@ -248,7 +245,6 @@ export function traverseStmt(c: TreeCursor, s: string): Stmt<null> {
       c.nextSibling(); 
       c.nextSibling(); 
       var value = traverseExpr(c, s);
-      console.log(c)
       c.parent();
       return {
         a: null,
@@ -355,18 +351,22 @@ export function traverseTypedVars(c: TreeCursor, s: string): Array<TypedVar> {
   let traversedDefaultValue = false; 
   while (c.type.name !== ")") {
     let name = s.substring(c.from, c.to);
+    console.log(name)
+    if ( name === ','){
+
+    } else {
     c.nextSibling();
     let typ = traverseTypeDef(c, s);
     if (typ !== null) {
       traversedDefaultValue = true;
       parameters.push({ name, type: typ});
     } else {
-      if (traversedDefaultValue === true) {
-        throw new Error("CompileError");
+        if (traversedDefaultValue === true) {
+          throw new Error("CompileError");
       }
       parameters.push({ name, type: typ });
     }
-
+  }
     c.nextSibling();
   }
   c.parent();

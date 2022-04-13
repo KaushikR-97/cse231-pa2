@@ -259,14 +259,14 @@ export function tcExpr(
           if (equalType(tLeft.a, NUM) && equalType(tRight.a, NUM)) {
             return { ...tBin, a: NUM };
           } else {
-            throw new Error();
+            throw new Error("Incompatible Types");
           }
         case BinOp.Eq:
         case BinOp.Neq:
           if (equalType(tLeft.a, tRight.a)) {
             return { ...tBin, a: BOOL };
           } else {
-            throw new Error();
+            throw new Error("Incompatible Types");
           }
         case BinOp.Lte:
         case BinOp.Gte:
@@ -275,11 +275,11 @@ export function tcExpr(
           if (equalType(tLeft.a, NUM) && equalType(tRight.a, NUM)) {
             return { ...tBin, a: BOOL };
           } else {
-            throw new Error();
+            throw new Error("Incompatible Types");
           }
         case BinOp.Is:
           if (!isNoneOrClass(tLeft.a) || !isNoneOrClass(tRight.a))
-            throw new Error();
+            throw new Error("Incompatible Types");
           return { ...tBin, a: BOOL };
       }
     case "uniop":
@@ -296,7 +296,7 @@ export function tcExpr(
           if (equalType(tExpr.a, BOOL)) {
             return tUni;
           } else {
-            throw new Error();
+            throw new Error("Incompatible Types");
           }
       }
     case "id":
@@ -306,7 +306,7 @@ export function tcExpr(
       } else if (env.globals.has(expr.name)) {
         return { ...expr, a: env.globals.get(expr.name) };
       } else {
-        throw Error();
+        throw Error("Id not found");
       }
     case "builtin1":
       if (expr.name === "print") {
@@ -319,7 +319,7 @@ export function tcExpr(
         if (isAssignable(env, tArg.a, expectedParam.type)) {
           return { ...expr, a: expr.a, arg: tArg };
         } else {
-          throw new Error();
+          throw new Error("Incompatible Types");
         }
       } else {
         throw Error();
@@ -335,10 +335,10 @@ export function tcExpr(
         ) {
           return { ...expr, a: expr.a, left: tLeftArg, right: tRightArg };
         } else {
-          throw new Error();
+          throw new Error("Incompatible Types");
         }
       } else {
-        throw Error();
+        throw Error("Incompatible Types");
       }
     
     case "call":

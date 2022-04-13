@@ -16,7 +16,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       },
       print_bool: (arg : any) => {
         console.log(arg)
-        var ke;
         if(arg === 0) { display("False"); }
         else { display("True"); }
         return arg;
