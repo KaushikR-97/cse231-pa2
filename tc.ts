@@ -206,17 +206,15 @@ export function tcStmt(
     case "if":
       locals.loop_depth += 1;
       var tCond = tcExpr(env, locals, stmt.cond);
-      const tThn = tcBlock(env, locals, stmt.thn);
+      const tThn = tcBlock(env, locals, stmt.then_block);
       const thnTyp = tThn[tThn.length - 1].a;
-      const tEls = tcBlock(env, locals, stmt.els);
-      const elsTyp = tEls[tEls.length - 1].a;
+      const ELif = tcBlock(env,locals,stmt.elif_block);
+      const tEls = tcBlock(env, locals, stmt.else_block);
       // restore loop depth
       locals.loop_depth -= 1;
       console.log(tCond.a)
       if (tCond.a !== BOOL) throw new Error("ERROR!");
-      else if (thnTyp !== elsTyp)
-        throw new Error("Types of then and else branches must match");
-      return { a: thnTyp, tag: stmt.tag, cond: tCond, thn: tThn, els: tEls };
+      return { a: thnTyp, tag: stmt.tag, cond: tCond, then_block: tThn, else_block: tEls ,elif_block:ELif };
     case "return":
       if (locals.topLevel)
         throw new Error("return outside of functions")

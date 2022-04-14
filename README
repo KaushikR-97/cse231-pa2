@@ -1,3 +1,48 @@
-Requires node to be installed (https://nodejs.org/en/download/)
 
-To build, first run "npm install", then you can run the commands from lecture
+1) We have a separate rule in our grammar to allocate the type of data it would hold during the execution of the code. Because of which there are differnt methods of print to display various types of data. This config is imported to the wasm module for running binary code and based on the results the corresponding message is displayed . The same configurations are given in webstart and node-main files. As WebAssembly makes use of binary data for performing the tasks the outhput would be binary and because of using such grammar we would be able to better put to visualize.
+
+2) Consider the following Python Program.
+
+  x : int = 60
+  def na(y: int):
+    total : int = 0
+    total = total + y + x
+  Here x is a global variable and the other two y and total are local variables. Their scope is limited to that function block. I made use of variable to keep a track of all the global paramaters available and thery are set using global set and global get whereas for others local set and local get were sufficient. Once the definition is run these data are flushed out of memory. These variables are not used thereafter but we need to still keep a track of the global parameters for other methods.
+
+
+3) There are 2 aspects for considering here. When we consider the boolean variable struck in an infinite loop the browser crashes and gets reloaded. Whereas if you consider a number and the condition is based on an algarithmic comparator, once the number reaches the max or min it can hold it stops execution on our compiler.Attached an example for the same as well.
+
+5)   Consider the following lines of code below. These lines was used for checking type compatibility of binomial expressions. Here we check whether both the operands are of int type and assign the type to the expression which needs to be checked later like in the case of if conditions.For binary operations only number type variables are allowed to perform these executions. As per my example one operand was of type boolean and the other was a number. A comparison check was being performed and it fails because of our introduced errors. 
+      
+      case "binop":
+      const tLeft = tcExpr(env, locals, expr.left);
+      const tRight = tcExpr(env, locals, expr.right);
+      const tBin = { ...expr, left: tLeft, right: tRight };
+      switch (expr.op) {
+        case BinOp.Plus:
+        case BinOp.Minus:
+        case BinOp.Mul:
+        case BinOp.IDiv:
+        case BinOp.Mod:
+          if (equalType(tLeft.a, NUM) && equalType(tRight.a, NUM)) {
+            return { ...tBin, a: NUM };
+          } else {
+            throw new Error("Incompatible Types");
+          }
+        case BinOp.Eq:
+        case BinOp.Neq:
+          if (equalType(tLeft.a, tRight.a)) {
+            return { ...tBin, a: BOOL };
+          } else {
+            throw new Error("Incompatible Types");
+          }
+        case BinOp.Lte:
+        case BinOp.Gte:
+        case BinOp.Lt:
+        case BinOp.Gt:
+          if (equalType(tLeft.a, NUM) && equalType(tRight.a, NUM)) {
+            return { ...tBin, a: BOOL };
+          } else {
+            throw new Error("Incompatible Types");
+          }
+ 

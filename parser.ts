@@ -1,13 +1,13 @@
 import { parser } from "lezer-python";
 import { TreeCursor } from "lezer";
 import {Program,Expr,Stmt,UniOp,BinOp,TypedVar,Type,FunDef,VarInit,Literal,Scope} from "./ast";
-//import * as BaseException from "./error";
 export const NUM: Type = { tag: "num" };
 export const BOOL: Type = { tag: "bool" };
 export const NONE: Type = { tag: "none" };
 
 
 export function traverseLiteral(c: TreeCursor, s: string): Literal {
+  console.log(c.type.name)
   switch (c.type.name) {
     case "Number":
       return {
@@ -228,7 +228,17 @@ export function traverseArguments(
   c.parent(); 
   return [args, kwargs];
 }
-
+export function traverseBody(c : TreeCursor, s : string) : Stmt<null>[] {
+  const stmts: Stmt<null>[] = []
+  c.firstChild();
+  while(c.nextSibling()) {
+    const stmt = traverseStmt(c, s)
+    stmts.push(stmt)
+    console.log(`traverseBody: stmt tag: ${stmt.tag}`)
+  }
+  c.parent()
+  return stmts
+}
 export function traverseStmt(c: TreeCursor, s: string): Stmt<null> {
   switch (c.node.type.name) {
     case "ReturnStatement":
@@ -258,34 +268,52 @@ export function traverseStmt(c: TreeCursor, s: string): Stmt<null> {
       c.parent(); 
       return { tag: "expr", expr: expr};
     case "IfStatement":
-      c.firstChild();
-      c.nextSibling();
-      var cond = traverseExpr(c, s);
-      c.nextSibling();
-      c.firstChild();
-      var thn = [];
-      while (c.nextSibling()) {
-        thn.push(traverseStmt(c, s));
-      }
-      c.parent();
-
-      if (!c.nextSibling() || c.name !== "else") {
-        throw new Error("CompileError");
-      }
-      c.nextSibling(); 
-      c.firstChild();
-      var els = [];
-      while (c.nextSibling()) {
-        els.push(traverseStmt(c, s));
-      }
-      c.parent();
-      c.parent();
-      return {
-        tag: "if",
-        cond: cond,
-        thn: thn,
-        els: els,
-      };
+        c.firstChild();
+        c.nextSibling();
+        const if_cond = traverseExpr(c, s)
+        c.nextSibling();
+        const then_block = traverseBody(c, s)
+        let elif_cond:Expr<null> = null
+        let elifStmt:Stmt<null> = null
+        let elif_block:Stmt<null>[] = []
+        let else_block:Stmt<null>[] = []
+        if (c.nextSibling()) {
+          if (c.type.name =="elif") {
+            c.nextSibling()
+            elif_cond = traverseExpr(c, s)
+            c.nextSibling()
+            const elifThen = traverseBody(c, s)
+            c.nextSibling()
+            elifStmt = {
+              tag: "if",
+              cond: elif_cond,
+              then_block: elifThen,
+              elif_block: [],
+              else_block: []
+            }
+            elif_block.push(elifStmt)
+          }
+          if (c.type.name == "else") {
+            c.nextSibling()
+            c.nextSibling()
+            const elseBody = traverseBody(c, s)
+            if (elifStmt!=null) {
+              //@ts-ignore
+              elifStmt.else_block = elseBody
+            }
+            else {
+              else_block = elseBody
+            }
+          }
+        }
+        c.parent();
+        return {
+          tag: "if",
+          cond: if_cond,
+          then_block: then_block,
+          elif_block: elif_block,
+          else_block: else_block
+        }
     case "WhileStatement":
       c.firstChild();
       c.nextSibling();

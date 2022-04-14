@@ -44,6 +44,14 @@ function envLookup(env: GlobalEnv, name: string): number {
   console.log(env.globals.get(name));
   return env.globals.get(name);
 }
+function codeGenStmts(stmts: Stmt<Type>[], env:GlobalEnv) : Array<string> {
+  let stmtsCode:string[] = []
+  stmts.forEach(stmt => {
+    const stmtCode = codeGenStmt(stmt, env)
+    stmtsCode = stmtsCode.concat(stmtCode)
+  })
+  return stmtsCode
+}
 
 function codeGenStmt(stmt: Stmt<Type>, env: GlobalEnv): Array<string> {
   switch(stmt.tag) {
@@ -64,16 +72,23 @@ function codeGenStmt(stmt: Stmt<Type>, env: GlobalEnv): Array<string> {
       var exprStmts = codeGenExpr(stmt.expr, env);
       exprStmts.push(`(local.set $scratch)`)
       return exprStmts;
-    case "if":
-      var condExpr = codeGenExpr(stmt.cond, env);  
-      var thnStmts = stmt.thn.map((innerStmt) => codeGenStmt(innerStmt, env)).flat();
-      var elsStmts = stmt.els.map((innerStmt) => codeGenStmt(innerStmt, env)).flat();
-      return condExpr
-        .concat(["(if (then"])
-        .concat(thnStmts)
-        .concat([")", "(else"])
-        .concat(elsStmts)
-        .concat(["))"]);
+      case "if": {
+        let condCode = codeGenExpr(stmt.cond, env)
+        let ifCode:string[]= condCode.concat([`(if`]).concat([`(then`])
+        const thenCode = codeGenStmts(stmt.then_block, env)
+        ifCode = ifCode.concat(thenCode).concat([`)`])
+        const elifCode = codeGenStmts(stmt.elif_block, env)
+        const elseCode = codeGenStmts(stmt.else_block, env)
+        //assert ((elifCode.length==0) || (elseCode.length==0))
+        const wasmElseBranch = elifCode.concat(elseCode)
+        if (wasmElseBranch.length>0) {
+          ifCode = ifCode.concat(['(else']).concat(wasmElseBranch).concat([')',')'])
+        }
+        else {
+          ifCode = ifCode.concat([`)`])
+        }
+        return ifCode
+      }
     case "while":
       var wcondExpr = codeGenExpr(stmt.cond, env);
       var bodyStmts = stmt.body.map((innerStmt) => codeGenStmt(innerStmt, env)).flat();
